@@ -61,11 +61,6 @@ class Part2Solver
         lines.each do |line|
             direction, amount = line
 
-            # new_location = calculate_new_location(direction, amount)
-            # if (@location.negative? and new_location >= 0) or (@location.positive? and new_location <= 0) or new_location.zero?
-            #     # we know we clicked to zero at least once
-            # end
-
             distance_to_zero = if direction.negative?
                 @location
             elsif direction.positive?
@@ -77,16 +72,6 @@ class Part2Solver
             @times_passed_zero += extra_loops
 
             adjust_location(direction, amount)
-
-            # extra_loops = amount / 100
-
-            # prev_location = @location
-            # adjust_location(direction, amount)
-            
-            # puts(@location)
-            # if ((prev_location.negative? and !@location.negative?) or (prev_location.positive? and !@location.negative?)) and (!prev_location.zero?)
-            #     @times_passed_zero += 1
-            # end
         end
 
         puts(@times_passed_zero)
@@ -107,5 +92,33 @@ class Part2Solver
     end
 end
 
+class Part2SolverAlt
+    def initialize
+        @location = 50
+        @times_passed_zero = 0
+    end 
+
+    def run
+        parser = Parser.new("./day_01/input.txt")
+        lines = parser.parse
+        # puts @location
+        lines.each do |line|
+            direction, amount = line
+
+            amount.times do
+                @location += direction
+                @location %= 100
+                # puts @location
+
+                @times_passed_zero += 1 if @location.zero?
+            end
+        end
+
+        puts "----"
+        puts @times_passed_zero
+    end
+end
+
 # Part1Solver.new.run()
-Part2Solver.new.run()
+# Part2Solver.new.run()
+Part2SolverAlt.new.run()
