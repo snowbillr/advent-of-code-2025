@@ -18,13 +18,13 @@ end
 
 class Part1Solver
   def initialize
-    @banks = Parser.new(file_path: './day_03/input.txt').parse
+    @banks = Parser.new(file_path: './day_03/test-input.txt').parse
   end
 
   def run
     @banks.map do |bank|
       # puts "----#{bank}----"
-      largest_num_index = find_largest_number_index_with_subsequent_numbers(bank.slice(0, bank.length - 1))
+      largest_num_index = find_largest_number_index_with_subsequent_numbers(bank, required_subsequent_numbers: 1)
       largest_num = bank[largest_num_index]
 
       # puts "largest num: #{largest_num}"
@@ -32,18 +32,18 @@ class Part1Solver
       remaining_bank = bank.slice(largest_num_index + 1, bank.length)
 
       # puts "remaining bank: #{remaining_bank}"
-      remaining_largest_num_index = find_largest_number_index_with_subsequent_numbers(remaining_bank)
+      remaining_largest_num_index = find_largest_number_index_with_subsequent_numbers(remaining_bank, required_subsequent_numbers: 0)
       remaining_largest_num = remaining_bank[remaining_largest_num_index]
 
       "#{largest_num}#{remaining_largest_num}".to_i
     end.sum
   end
 
-  private def find_largest_number_index_with_subsequent_numbers(bank)
+  private def find_largest_number_index_with_subsequent_numbers(bank, required_subsequent_numbers: 0)
     largest_num = 0
     largest_index = 0
 
-    bank.each_with_index do |v, i|
+    bank.slice(0, bank.length - required_subsequent_numbers).each_with_index do |v, i|
       if v > largest_num
         largest_num = v
         largest_index = i
@@ -54,4 +54,41 @@ class Part1Solver
   end
 end
 
-puts Part1Solver.new.run
+class Part2Solver
+  def initialize
+    @banks = Parser.new(file_path: './day_03/input.txt').parse
+  end
+
+  def run
+    @banks.map do |bank|
+      # puts "---#{bank}---"
+      remaining_bank = bank.dup
+      largest_num_digits = []
+      12.times do |i|
+        largest_num_index = find_largest_number_index_with_subsequent_numbers(remaining_bank, required_subsequent_numbers: 11 - i)
+        # puts "remaining bank: #{remaining_bank}, required subsequent numbers: #{12 - i}, largest num: #{remaining_bank[largest_num_index]}"
+        largest_num_digits << remaining_bank[largest_num_index]
+        remaining_bank = remaining_bank.slice(largest_num_index + 1, bank.length)
+      end
+
+      largest_num_digits.join('').to_i
+    end.sum
+  end
+
+  private def find_largest_number_index_with_subsequent_numbers(bank, required_subsequent_numbers: 1)
+    largest_num = 0
+    largest_index = 0
+
+    bank.slice(0, bank.length - required_subsequent_numbers).each_with_index do |v, i|
+      if v > largest_num
+        largest_num = v
+        largest_index = i
+      end
+    end
+
+    largest_index
+  end
+end
+
+# puts Part1Solver.new.run
+puts Part2Solver.new.run
