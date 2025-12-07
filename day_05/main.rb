@@ -27,10 +27,6 @@ class Day1Solver
   end
 
   def run
-    # puts @fresh_ranges
-    # puts @fresh_ranges.length
-    # puts '---'
-
     previous_size = @fresh_ranges.length
     loop do
       @fresh_ranges = collapse_ranges
@@ -39,17 +35,11 @@ class Day1Solver
       previous_size = @fresh_ranges.length
     end
 
-    # puts @fresh_ranges
-    # puts @fresh_ranges.length
-
     fresh_ids = []
 
     @ids.each do |id|
-      # puts "--#{id}--"
       @fresh_ranges.each do |range|
-        # puts "range: #{range}"
         if range.include? id
-          # puts "fresh!"
           fresh_ids << id
           break
         end
@@ -84,4 +74,47 @@ class Day1Solver
   end
 end
 
-Day1Solver.new.run
+class Day2Solver
+  def initialize
+    @fresh_ranges, _unused = Parser.new(file_path: './day_05/input.txt').parse
+  end
+
+  def run
+    previous_size = @fresh_ranges.length
+    loop do
+      @fresh_ranges = collapse_ranges
+
+      break if previous_size == @fresh_ranges.length
+      previous_size = @fresh_ranges.length
+    end
+
+    puts @fresh_ranges.map(&:size).sum
+  end
+
+  private def collapse_ranges
+    collapsed_ranges = []
+    loop do
+      target_range = @fresh_ranges.shift
+      absorbed_indices = []
+
+      @fresh_ranges.each_with_index do |range, i|
+        if target_range.overlap? range
+         target_range = Range.new([target_range.begin, range.begin].min, [target_range.end, range.end].max) 
+         absorbed_indices << i
+        end
+      end
+
+      absorbed_indices.each { |i| @fresh_ranges[i] = nil }
+      @fresh_ranges.filter! { |r| r != nil }
+
+      collapsed_ranges << target_range
+
+      break if @fresh_ranges.length.zero?
+    end
+
+    collapsed_ranges
+  end
+end
+
+# Day1Solver.new.run
+Day2Solver.new.run
