@@ -52,6 +52,10 @@ class Grid
     @rows[row][col]
   end
 
+  def update(row, col, value)
+    @rows[row][col] = value
+  end
+
   def print
     @rows.each do |row|
       puts row
@@ -70,11 +74,8 @@ class Day1Solver
     @grid.each do |cell, row, col|
       next if cell == Grid::EMPTY_CELL
 
-      # puts "---#{row}, #{col}---"
-
       paper_neighbors = @grid.neighbors(row, col)
         .filter { |cell| cell == Grid::PAPER_CELL }
-      # puts "neighbors: #{paper_neighbors}"
 
       accessible_rolls_of_paper_count += 1 if paper_neighbors.count < 4
     end
@@ -83,4 +84,44 @@ class Day1Solver
   end
 end
 
-Day1Solver.new.run
+class Day2Solver
+  def initialize
+    @grid = Parser.new(file_path: './day_04/input.txt').parse
+  end
+
+  def run
+    removed_rolls_of_paper_count = 0
+
+    loop do
+      removable_rolls_of_paper_coords = identify_removable_rolls_of_paper(@grid)
+
+      break if removable_rolls_of_paper_coords.length.zero?
+
+      removed_rolls_of_paper_count += removable_rolls_of_paper_coords.length
+
+      removable_rolls_of_paper_coords.each do |(row, col)|
+        @grid.update(row, col, Grid::EMPTY_CELL)
+      end
+    end
+  end
+
+  private def identify_removable_rolls_of_paper(grid)
+    removable_cells = []
+
+    grid.each do |cell, row, col|
+      next if cell == Grid::EMPTY_CELL
+
+      paper_neighbors = grid.neighbors(row, col)
+        .filter { |cell| cell == Grid::PAPER_CELL }
+
+      if paper_neighbors.count < 4
+        removable_cells << [row, col]
+      end
+    end
+
+    removable_cells
+  end
+end
+
+# Day1Solver.new.run
+Day2Solver.new.run
