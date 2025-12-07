@@ -10,9 +10,9 @@ class Parser
     File.open(@file_path, 'r') do |f|
       f.each_line do |line|
         if /-/ =~ line
-          fresh_ranges << Range.new(*line.chomp.split('-'))
+          fresh_ranges << Range.new(*line.chomp.split('-').map(&:to_i))
         else
-          ids << line.chomp
+          ids << line.chomp.to_i
         end
       end
     end
@@ -23,23 +23,33 @@ end
 
 class Day1Solver
   def initialize
-    @fresh_ranges, @ids = Parser.new(file_path: './day_05/test-input.txt').parse
+    @fresh_ranges, @ids = Parser.new(file_path: './day_05/input.txt').parse
   end
 
   def run
-    puts @fresh_ranges
-    collapsed_ranges = collapse_ranges(@fresh_ranges)
-    puts '---'
-    puts collapsed_ranges
+    # puts @fresh_ranges
+    # puts @fresh_ranges.length
+    # puts '---'
 
-    collapsed_ranges = collapse_ranges(collapsed_ranges)
-    puts '---'
-    puts collapsed_ranges
+    previous_size = @fresh_ranges.length
+    loop do
+      @fresh_ranges = collapse_ranges
+
+      break if previous_size == @fresh_ranges.length
+      previous_size = @fresh_ranges.length
+    end
+
+    # puts @fresh_ranges
+    # puts @fresh_ranges.length
+
     fresh_ids = []
 
     @ids.each do |id|
-      collapsed_ranges.each do |range|
+      # puts "--#{id}--"
+      @fresh_ranges.each do |range|
+        # puts "range: #{range}"
         if range.include? id
+          # puts "fresh!"
           fresh_ids << id
           break
         end
@@ -49,18 +59,28 @@ class Day1Solver
     puts fresh_ids.count
   end
 
-  private def collapse_ranges(ranges)
+  private def collapse_ranges
     collapsed_ranges = []
+    loop do
+      target_range = @fresh_ranges.shift
+      absorbed_indices = []
 
-    ranges.each_with_index do |a, i|
-      new_range = Range.new(a.begin, a.end)
-      ranges.slice(i, ranges.length).each do |b|
-        if new_range.overlap? b
-          new_range = Range.new([a.begin, b.begin].min, [a.end, b.end].max)
+      @fresh_ranges.each_with_index do |range, i|
+        if target_range.overlap? range
+         target_range = Range.new([target_range.begin, range.begin].min, [target_range.end, range.end].max) 
+         absorbed_indices << i
         end
       end
-      collapsed_ranges << new_range
+
+      absorbed_indices.each { |i| @fresh_ranges[i] = nil }
+      @fresh_ranges.filter! { |r| r != nil }
+
+      collapsed_ranges << target_range
+
+      break if @fresh_ranges.length.zero?
     end
+
+    collapsed_ranges
   end
 end
 
