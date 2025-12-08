@@ -43,11 +43,14 @@ class Parser
       /(\d+\s*?)($|\s)/.match(line)
     end
 
+    # if end of string /\d+\s*$/
+    # then the other conditions
+
     if match.nil?
       puts "nil match (eod):#{line}"
       [line, nil]
     else
-      puts "#{alignment}:'#{match[1]}'"
+      puts "#{alignment}:'#{match[1]}' - '#{match.post_match}'"
       [match[1], match.post_match]
     end
   end
