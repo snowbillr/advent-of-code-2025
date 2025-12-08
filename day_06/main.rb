@@ -8,18 +8,56 @@ class Parser
   def parse
     rows = []
     File.open(@file_path, 'r') do |f|
+      row = []
+
       f.each_line do |line|
-        rows << line.strip.split(/\s+/)
+        remaining_line = line.chomp
+        loop do
+          match, rest_of_line = match_first_value(remaining_line)
+
+          row << match
+          remaining_line = rest_of_line
+
+          break if remaining_line.nil?
+        end
       end
+
+      rows << row
     end
 
     Grid.new(rows: rows)
+  end
+
+  private def match_first_value(line)
+    alignment = if line.start_with?(' ')
+      'right'
+    else
+      'left'
+    end
+
+    puts "---#{line}---"
+
+    match = if alignment == 'right'
+      /(\s+\d+)\s/.match(line) 
+    elsif alignment == 'left'
+      /(\d+\s*?)($|\s)/.match(line)
+    end
+
+    if match.nil?
+      puts "nil match (eod):#{line}"
+      [line, nil]
+    else
+      puts "#{alignment}:'#{match[1]}'"
+      [match[1], match.post_match]
+    end
   end
 end
 
 class Day1Solver
   def initialize
-    @grid = Parser.new(file_path: 'day_06/input.txt').parse
+    @grid = Parser.new(file_path: 'day_06/test-input.txt').parse
+
+    @grid.print
   end
 
   def run
@@ -54,4 +92,4 @@ class Day1Solver
   end
 end
 
-Day1Solver.new.run
+Day1Solver.new
